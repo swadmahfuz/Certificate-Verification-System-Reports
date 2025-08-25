@@ -7,45 +7,22 @@
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
-        body {
-            font-size: 13px;
-        }
-        .container {
-            max-width: 99%;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
-        .table-striped tbody td, .table-striped thead th {
-            vertical-align: middle;
-        }
+        body { font-size: 13px; }
+        .container { max-width: 99%; }
+        .table-container { overflow-x: auto; }
+        .table-striped tbody td, .table-striped thead th { vertical-align: middle; }
         .table-striped thead th {
-            text-align: left;
-            position: sticky;
-            top: 0;
-            background-color: rgb(243, 243, 243);
-            border-right: 1px solid #dee2e6;
+            text-align: left; position: sticky; top: 0;
+            background-color: rgb(243, 243, 243); border-right: 1px solid #dee2e6;
         }
-        .table-striped thead th:last-child {
-            border-right: none;
-        }
+        .table-striped thead th:last-child { border-right: none; }
         .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
             transition: all 0.3s ease;
         }
-        .btn i {
-            font-size: 14px;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
+        .btn i { font-size: 14px; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body background="images/tuv-login-background1.jpg">
@@ -54,7 +31,7 @@
     <div class="card bg-light mt-3">
         <div class="card-header" style="padding-top: 20px; padding-bottom: 20px;">
             <center>
-                <h3 style="padding-bottom: 5px">TÜV Austria BIC CVS | Import/Export Calibration Certificate Data</h3>
+                <h3 style="padding-bottom: 5px">TÜV Austria BIC CVS | Import/Export Report Certificate Data</h3>
                 <table style="width:64%; margin: auto;">
                     <tr>
                         <td>
@@ -68,12 +45,12 @@
                             </a>
                         </td>
                         <td>
-                            <a href="./downloads/TUVAT CVS Calibration - Data Import Template.xlsx" class="btn btn-info d-flex align-items-center">
+                            <a href="./downloads/TUVAT CVS Reports - Data Import Template.xlsx" class="btn btn-info d-flex align-items-center">
                                 <i class="fa-solid fa-download me-1"></i> Download Blank CSV File
                             </a>
                         </td>
                         <td>
-                            <a href="./downloads/TUVAT CVS Calibration - Sample Data File.xlsx" class="btn btn-secondary d-flex align-items-center">
+                            <a href="./downloads/TUVAT CVS Reports - Sample Data File.xlsx" class="btn btn-secondary d-flex align-items-center">
                                 <i class="fa-solid fa-file-lines me-1"></i> Download Sample Data
                             </a>
                         </td>

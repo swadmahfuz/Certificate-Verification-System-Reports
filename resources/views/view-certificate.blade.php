@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TÜV Austria BIC CVS | View Calibration Certificate</title>
+    <title>TÜV Austria BIC CVS | View Report Certificate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
@@ -27,7 +27,7 @@
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
-                <h3>TÜV Austria BIC CVS - Detailed Calibration Certificate Information</h3>
+                <h3>TÜV Austria BIC CVS - Detailed Report Certificate Information</h3>
                 <div class="btn-container mt-3">
                     <a href="../dashboard" class="btn btn-primary"><i class="fa-solid fa-arrow-left me-1"></i> Go back to Dashboard</a>
                     @if($certificate->status !== 'Deleted')
@@ -89,7 +89,7 @@
                                     <span class="text-warning">Certificate Pending Review ⚠️</span>
                                 @elseif ($certificate->status === 'Pending Approval')
                                     <span class="text-warning">Certificate Pending Approval ⚠️</span>
-                                @elseif (empty($certificate->validity_date) || \Carbon\Carbon::now() <= \Carbon\Carbon::parse($certificate->validity_date))
+                                @elseif (empty($certificate->report_validity_date) || \Carbon\Carbon::now() <= \Carbon\Carbon::parse($certificate->report_validity_date))
                                     <span class="text-success">Certificate Valid! ✅</span>
                                 @else
                                     <span class="text-danger">Certificate Expired! ⚠️</span>
@@ -111,29 +111,38 @@
                             </td>
                         </tr>
 
-                        <tr><th>Calibration Engineer / TUVAT Responsible</th><td>{{ $certificate->calibrator }}</td></tr>
                         <tr><th>Client</th><td>{{ $certificate->client_name }}</td></tr>
                         <tr><th>Location</th><td>{{ $certificate->location }}</td></tr>
+                        <tr><th>Team Members</th><td>{{ $certificate->team_members }}</td></tr>
 
-                        <tr><th>Equipment/Item Name</th><td>{{ $certificate->equipment_name }}</td></tr>
-                        <tr><th>Manufacturer / Brand</th><td>{{ $certificate->equipment_brand }}</td></tr>
-                        <tr><th>Equipment ID</th><td>{{ $certificate->equipment_id }}</td></tr>
+                        <tr><th>Report Prepared By</th><td>{{ $certificate->report_prepared_by }}</td></tr>
+                        <tr><th>Report Approved By</th><td>{{ $certificate->report_approved_by }}</td></tr>
 
-                        <tr><th>Calibration Date</th><td>{{ \Carbon\Carbon::parse($certificate->calibration_date)->format('d M Y') }}</td></tr>
-                        <tr><th>Report Issue Date</th><td>{{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d M Y') }}</td></tr>
-
-                        <tr><th>Valid Till</th>
+                        <tr>
+                            <th>Report Issue Date</th>
                             <td>
-                                @if (!empty($certificate->validity_date))
-                                    {{ \Carbon\Carbon::parse($certificate->validity_date)->format('d M Y') }}
+                                @if (!empty($certificate->report_issue_date))
+                                    {{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d M Y') }}
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Valid Till</th>
+                            <td>
+                                @if (!empty($certificate->report_validity_date))
+                                    {{ \Carbon\Carbon::parse($certificate->report_validity_date)->format('d M Y') }}
                                 @else
                                     No Expiry Date
                                 @endif
                             </td>
                         </tr>
 
-                        <tr><th>Calibration Remarks</th><td>{{ $certificate->calibration_remarks }}</td></tr>
-                        <tr><th>Internal Notes</th><td>{{ $certificate->calibration_internal_notes }}</td></tr>
+                        <tr><th>Report Revision</th><td>{{ $certificate->report_revision }}</td></tr>
+                        <tr><th>Report Remarks</th><td>{{ $certificate->report_remarks }}</td></tr>
+                        <tr><th>Internal Notes</th><td>{{ $certificate->report_internal_notes }}</td></tr>
 
                         <tr>
                             <th>Certificate PDF File</th>
@@ -168,7 +177,7 @@
                             </td>
                         </tr>
 
-                        <tr><th>Review By</th><td>{{ $certificate->review_by }}</td></tr>
+                        <tr><th>Review By (System)</th><td>{{ $certificate->review_by }}</td></tr>
                         <tr>
                             <th>Reviewed on</th>
                             <td>
@@ -179,7 +188,7 @@
                                 @endif
                             </td>
                         </tr>
-                        <tr><th>Approval By</th><td>{{ $certificate->approval_by }}</td></tr>
+                        <tr><th>Approval By (System)</th><td>{{ $certificate->approval_by }}</td></tr>
                         <tr>
                             <th>Approved on</th>
                             <td>

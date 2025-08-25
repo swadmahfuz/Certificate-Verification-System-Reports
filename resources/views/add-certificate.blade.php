@@ -4,36 +4,20 @@
     <meta charset="UTF-8">
     <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Calibration Certificate</title>
+    <title>Add Report / Certificate</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <style>
-        body {
-            font-size: 13px;
-        }
+        body { font-size: 13px; }
         .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            white-space: nowrap;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            transition: all 0.3s ease; white-space: nowrap;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .card-header {
-            background-color: #f4f4f4;
-            padding: 20px;
-        }
-        label {
-            font-weight: 600;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-header { background-color: #f4f4f4; padding: 20px; }
+        label { font-weight: 600; }
     </style>
 </head>
 <body background="images/tuv-login-background1.jpg">
@@ -42,7 +26,7 @@
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
-                <h3>TÜV Austria BIC CVS | Add New Calibration Certificate</h3>
+                <h3>TÜV Austria BIC CVS | Add New Report / Certificate</h3>
                 <div class="mt-3 d-flex justify-content-center">
                     <a href="./dashboard" class="btn btn-primary me-2">
                         <i class="fa-solid fa-arrow-left me-1"></i> Go back to Dashboard
@@ -63,13 +47,7 @@
                         <label for="certificate_number">Certificate Number *</label>
                         @error('certificate_number') <div class="text-danger">{{ $message }}</div> @enderror
                         <input type="text" name="certificate_number" class="form-control"
-                               value="CAL-TUVAT-{{ $currentYear }}-{{ $currentMonthDay }}-">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="calibrator">Calibration Engineer *</label>
-                        @error('calibrator') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="text" name="calibrator" class="form-control" value="{{ old('calibrator') }}">
+                               value="RPT-TUVAT-{{ $currentYear }}-{{ $currentMonthDay }}-">
                     </div>
 
                     <div class="mb-3">
@@ -79,33 +57,28 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="location">Location *</label>
+                        <label for="location">Location</label>
                         @error('location') <div class="text-danger">{{ $message }}</div> @enderror
                         <textarea name="location" class="form-control">{{ old('location') }}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label for="equipment_name">Equipment Name *</label>
-                        @error('equipment_name') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="text" name="equipment_name" class="form-control" value="{{ old('equipment_name') }}">
+                        <label for="team_members">Team Members</label>
+                        @error('team_members') <div class="text-danger">{{ $message }}</div> @enderror
+                        <input type="text" name="team_members" class="form-control" placeholder="Comma-separated"
+                               value="{{ old('team_members') }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="equipment_brand">Equipment Brand *</label>
-                        @error('equipment_brand') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="text" name="equipment_brand" class="form-control" value="{{ old('equipment_brand') }}">
+                        <label for="report_prepared_by">Report Prepared By *</label>
+                        @error('report_prepared_by') <div class="text-danger">{{ $message }}</div> @enderror
+                        <input type="text" name="report_prepared_by" class="form-control" value="{{ old('report_prepared_by') }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="equipment_id">Equipment ID *</label>
-                        @error('equipment_id') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="text" name="equipment_id" class="form-control" value="{{ old('equipment_id') }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="calibration_date">Calibration Date *</label>
-                        @error('calibration_date') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="date" name="calibration_date" class="form-control" value="{{ old('calibration_date') }}">
+                        <label for="report_approved_by">Report Approved By *</label>
+                        @error('report_approved_by') <div class="text-danger">{{ $message }}</div> @enderror
+                        <input type="text" name="report_approved_by" class="form-control" value="{{ old('report_approved_by') }}">
                     </div>
 
                     <div class="mb-3">
@@ -115,21 +88,27 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="validity_date">Validity Date</label>
-                        @error('validity_date') <div class="text-danger">{{ $message }}</div> @enderror
-                        <input type="date" name="validity_date" class="form-control" value="{{ old('validity_date') }}">
+                        <label for="report_validity_date">Report Validity Date</label>
+                        @error('report_validity_date') <div class="text-danger">{{ $message }}</div> @enderror
+                        <input type="date" name="report_validity_date" class="form-control" value="{{ old('report_validity_date') }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="calibration_remarks">Calibration Remarks</label>
-                        @error('calibration_remarks') <div class="text-danger">{{ $message }}</div> @enderror
-                        <textarea name="calibration_remarks" class="form-control">{{ old('calibration_remarks') }}</textarea>
+                        <label for="report_revision">Report Revision</label>
+                        @error('report_revision') <div class="text-danger">{{ $message }}</div> @enderror
+                        <input type="text" name="report_revision" class="form-control" value="{{ old('report_revision') }}">
                     </div>
 
                     <div class="mb-3">
-                        <label for="calibration_internal_notes">Internal Notes</label>
-                        @error('calibration_internal_notes') <div class="text-danger">{{ $message }}</div> @enderror
-                        <textarea name="calibration_internal_notes" class="form-control">{{ old('calibration_internal_notes') }}</textarea>
+                        <label for="report_remarks">Report Remarks</label>
+                        @error('report_remarks') <div class="text-danger">{{ $message }}</div> @enderror
+                        <textarea name="report_remarks" class="form-control">{{ old('report_remarks') }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="report_internal_notes">Internal Notes</label>
+                        @error('report_internal_notes') <div class="text-danger">{{ $message }}</div> @enderror
+                        <textarea name="report_internal_notes" class="form-control">{{ old('report_internal_notes') }}</textarea>
                     </div>
 
                     <div class="mb-3">

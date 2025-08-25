@@ -8,48 +8,26 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-size: 13px;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            padding-top: 40px;
-        }
-        .form-control {
-            font-size: 14px;
-            padding: 10px;
-        }
-        .btn {
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 10px 15px;
-        }
-        h1, h3, h4 {
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        td {
-            padding: 6px;
-        }
+        body { background-color: #f8f9fa; font-size: 13px; }
+        .container { max-width: 800px; margin: auto; padding-top: 40px; }
+        .form-control { font-size: 14px; padding: 10px; }
+        .btn { font-size: 14px; font-weight: 600; border-radius: 8px; padding: 10px 15px; }
+        h1, h3, h4 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 6px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="text-center mb-4">
             <img src="images/TUV Austria Logo.png" alt="TUV Logo" width="250">
-            <h1>Verify Calibration Certificate</h1>
+            <h1>Verify Report Certificate</h1>
             <p>Enter the Certificate Number and click the "Verify" button.</p>
         </div>
 
         <form id="s-form" method="get" class="mb-4">
             <div class="input-group">
-                <input type="text" name="search" id="search" class="form-control" placeholder="Ex: CAL-TUVAT-2025-0725-001" required>
+                <input type="text" name="search" id="search" class="form-control" placeholder="Ex: RPT-TUVAT-2025-0725-001" required>
                 <button class="btn btn-primary" type="submit">VERIFY</button>
             </div>
         </form>
@@ -68,7 +46,7 @@
                     <div class="mb-4">
                         @if ($certificate->status == 'Deleted')
                             <h3 class="text-danger">This certificate has been deleted and is no longer valid. ❌</h3>
-                        @elseif (empty($certificate->validity_date) || ! \Carbon\Carbon::parse($certificate->validity_date)->isPast())
+                        @elseif (empty($certificate->report_validity_date) || ! \Carbon\Carbon::parse($certificate->report_validity_date)->isPast())
                             <h3 class="text-success">Certificate Authentic and Valid! ✅</h3>
                             <h6><center>Please verify the details below:</center></h6>
                         @else
@@ -77,25 +55,33 @@
 
                         <table class="table table-bordered mt-3">
                             <tr><td><strong>Certificate Number</strong></td><td>{{ $certificate->certificate_number }}</td></tr>
-                            <tr><td><strong>Calibration Engineer</strong></td><td>{{ $certificate->calibrator }}</td></tr>
                             <tr><td><strong>Client Name</strong></td><td>{{ $certificate->client_name }}</td></tr>
                             <tr><td><strong>Location</strong></td><td>{{ $certificate->location }}</td></tr>
-                            <tr><td><strong>Equipment Name</strong></td><td>{{ $certificate->equipment_name }}</td></tr>
-                            <tr><td><strong>Equipment Brand</strong></td><td>{{ $certificate->equipment_brand ?? 'N/A' }}</td></tr>
-                            <tr><td><strong>Equipment ID</strong></td><td>{{ $certificate->equipment_id ?? 'N/A' }}</td></tr>
-                            <tr><td><strong>Calibration Date</strong></td><td>{{ \Carbon\Carbon::parse($certificate->calibration_date)->format('d M Y') }}</td></tr>
-                            <tr><td><strong>Report Issue Date</strong></td><td>{{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d M Y') }}</td></tr>
+                            <tr><td><strong>Team Members</strong></td><td>{{ $certificate->team_members ?? 'N/A' }}</td></tr>
+                            <tr><td><strong>Report Prepared By</strong></td><td>{{ $certificate->report_prepared_by }}</td></tr>
+                            <tr><td><strong>Report Approved By</strong></td><td>{{ $certificate->report_approved_by }}</td></tr>
+                            <tr>
+                                <td><strong>Report Issue Date</strong></td>
+                                <td>
+                                    @if (!empty($certificate->report_issue_date))
+                                        {{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d M Y') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
+                            </tr>
                             <tr>
                                 <td><strong>Validity Date</strong></td>
                                 <td>
-                                    @if (!empty($certificate->validity_date))
-                                        {{ \Carbon\Carbon::parse($certificate->validity_date)->format('d M Y') }}
+                                    @if (!empty($certificate->report_validity_date))
+                                        {{ \Carbon\Carbon::parse($certificate->report_validity_date)->format('d M Y') }}
                                     @else
                                         No Expiry Date
                                     @endif
                                 </td>
                             </tr>
-                            <tr><td><strong>Calibration Remarks</strong></td><td>{{ $certificate->calibration_remarks ?? 'N/A' }}</td></tr>
+                            <tr><td><strong>Report Revision</strong></td><td>{{ $certificate->report_revision ?? 'N/A' }}</td></tr>
+                            <tr><td><strong>Report Remarks</strong></td><td>{{ $certificate->report_remarks ?? 'N/A' }}</td></tr>
                         </table>
 
                         @if ($certificate->certificate_pdf)

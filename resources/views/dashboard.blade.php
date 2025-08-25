@@ -4,40 +4,31 @@
         <meta charset="utf-8">
         <meta name="robots" content="noindex">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>TÜV Austria BIC CVS | Admin Dashboard</title>
+        <title>TÜV Austria BIC CVS | Admin Dashboard (Reports)</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <!-- Include jQuery for AJAX functionality (Required for live search)-->
         <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
         <style>
             .container { max-width: 99%; }
             .table-container { overflow-x: auto; }
-            .table-striped tbody td, .table-striped thead th { vertical-align: middle; } /* Vertically centers the text in table cells */
+            .table-striped tbody td, .table-striped thead th { vertical-align: middle; }
             .table-striped thead th {
-                text-align: left; /* Centers the text horizontally in table headers */
+                text-align: left;
                 position: sticky;
-                top: 0; /* Keeps the header at the top */
-                background-color: rgb(243, 243, 243); /* Non-transparent background */
-                border-right: 1px solid #dee2e6; /* Adds a border to the right of each header cell */
+                top: 0;
+                background-color: rgb(243, 243, 243);
+                border-right: 1px solid #dee2e6;
             }
-            .table-striped thead th:last-child { border-right: none; } /* Removes the right border from the last header cell */
-            .table-striped { font-size: 11px; } /* Sets the font size for the table */
+            .table-striped thead th:last-child { border-right: none; }
+            .table-striped { font-size: 11px; }
             .btn {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 10px 15px;
-                border-radius: 8px;
-                font-size: 10px;
-                font-weight: bold;
+                display: flex; align-items: center; justify-content: center;
+                padding: 10px 15px; border-radius: 8px; font-size: 10px; font-weight: bold;
                 transition: all 0.3s ease;
             }
             .btn i { font-size: 16px; }
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            }
+            .btn:hover { transform: translateY(-2px); box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
         </style>
     </head>
     <body background="images/tuv-login-background1.jpg">
@@ -46,13 +37,11 @@
                 <div class="card">
                     <div class="card-header" style="padding-top: 20px; padding-bottom: 0px;">
                         <h6 class="text-end">Logged in User: <b>{{ auth()->user()->name }} ({{ auth()->user()->designation }})</b></h6>
-                        <center><h3 class="mb-3">TÜV Austria BIC - Calibration Certificate Verification System (CVS)</h3></center>
+                        <center><h3 class="mb-3">TÜV Austria BIC - Reports Certificate Verification System (CVS)</h3></center>
                         @php
-                            $currentDomain = request()->getHost();   // e.g., "training.example.com"
-                            $baseDomain = preg_replace('/^[^.]+\./', '', $currentDomain); // e.g., "example.com"
+                            $currentDomain = request()->getHost();
+                            $baseDomain = preg_replace('/^[^.]+\./', '', $currentDomain);
                         @endphp
-                        <!-- The above code is used to capture the current subdomain and base domain, but will only work on cPanel not Local Host (XAMPP) -->
-                        <!-- The two buttons below will also only work if app is hosted on cPanel -->
                         <table style="width:80%; margin: auto;">
                             <tr>
                                 <td>
@@ -70,6 +59,12 @@
                                         <i class="fa-solid fa-wrench me-1"></i> Calibration CVS Portal
                                     </a>
                                 </td>
+                                <td>
+                                    <a href="https://reports.{{ $baseDomain }}/dashboard" class="btn btn-dark d-flex align-items-center" target="_blank">
+                                        <i class="fa-solid fa-file-lines me-1"></i> Reports CVS Portal
+                                    </a>
+                                </td>
+
                             </tr>
                         </table>
                         <table class="mb-2" style="width: 80%; margin: auto;">
@@ -98,11 +93,11 @@
                                 <tr>
                                     <th>Sl.</th>
                                     <th>Certificate No</th>
-                                    <th>Calibration Engg</th>
                                     <th>Client</th>
-                                    <th>Equipment</th>
-                                    <th>Calibration Date</th>
-                                    <th>Report Issue Date</th>
+                                    <th>Team Members</th>
+                                    <th>Prepared By</th>
+                                    <th>Approved By</th>
+                                    <th>Issue Date</th>
                                     <th>Validity</th>
                                     <th>Status</th>
                                     <th>QR</th>
@@ -123,14 +118,20 @@
                                     <tr>
                                         <td>{{ $loop->iteration + $offset }}.</td>
                                         <td>{{ $certificate->certificate_number }}</td>
-                                        <td>{{ $certificate->calibrator }}</td>
                                         <td>{{ $certificate->client_name }}</td>
-                                        <td>{{ $certificate->equipment_name }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($certificate->calibration_date)->format('d-m-Y') }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d-m-Y') }}</td>
+                                        <td>{{ $certificate->team_members }}</td>
+                                        <td>{{ $certificate->report_prepared_by }}</td>
+                                        <td>{{ $certificate->report_approved_by }}</td>
                                         <td>
-                                            @if ($certificate->validity_date)
-                                                {{ \Carbon\Carbon::parse($certificate->validity_date)->format('d-m-Y') }}
+                                            @if ($certificate->report_issue_date)
+                                                {{ \Carbon\Carbon::parse($certificate->report_issue_date)->format('d-m-Y') }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($certificate->report_validity_date)
+                                                {{ \Carbon\Carbon::parse($certificate->report_validity_date)->format('d-m-Y') }}
                                             @else
                                                 N/A
                                             @endif
@@ -179,13 +180,13 @@
                                 let verifyUrl = "{{ url('') }}" + "?search=" + cert.certificate_number;
                                 _html += `<tr>
                                     <td>${index + 1 + (res.data.current_page - 1) * res.data.per_page}.</td>
-                                    <td>${cert.certificate_number}</td>
-                                    <td>${cert.calibrator ?? ''}</td>
+                                    <td>${cert.certificate_number ?? ''}</td>
                                     <td>${cert.client_name ?? ''}</td>
-                                    <td>${cert.equipment_name ?? ''}</td>
-                                    <td>${formatDate(cert.calibration_date)}</td>
+                                    <td>${cert.team_members ?? ''}</td>
+                                    <td>${cert.report_prepared_by ?? ''}</td>
+                                    <td>${cert.report_approved_by ?? ''}</td>
                                     <td>${formatDate(cert.report_issue_date)}</td>
-                                    <td>${formatDate(cert.validity_date)}</td>
+                                    <td>${formatDate(cert.report_validity_date)}</td>
                                     <td>${cert.status ?? ''}</td>
                                     <td><img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${verifyUrl}"/></td>
                                     <td>
@@ -210,7 +211,7 @@
                 function formatDate(date) {
                     if (!date) return 'N/A';
                     let d = new Date(date);
-                    if (isNaN(d)) return date; // in case stored as string not ISO
+                    if (isNaN(d)) return date;
                     return ('0' + d.getDate()).slice(-2) + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + d.getFullYear();
                 }
 

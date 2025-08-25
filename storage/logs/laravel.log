@@ -2541,3 +2541,11 @@ Stack trace:
 #58 D:\\xampp\\htdocs\\verify-cert-reports\\index.php(21): require_once('D:\\\\xampp\\\\htdocs...')
 #59 {main}
 "} 
+[2025-08-25 14:27:04] local.ERROR: Cannot declare class CreateReportsCertificatesTables, because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot declare class CreateReportsCertificatesTables, because the name is already in use at D:\\xampp\\htdocs\\verify-cert-reports\\database\\migrations\\2025_08_25_140129_create_report_certificates_tables.php:7)
+[stacktrace]
+#0 {main}
+"} 
+[2025-08-25 14:27:43] local.ERROR: Cannot declare class CreateReportsCertificatesTables, because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot declare class CreateReportsCertificatesTables, because the name is already in use at D:\\xampp\\htdocs\\verify-cert-reports\\database\\migrations\\2025_08_25_140129_create_report_certificates_tables.php:7)
+[stacktrace]
+#0 {main}
+"} 

@@ -13,12 +13,12 @@ use DB;
 
 /*
 |--------------------------------------------------------------------------
-| Certificate Verification System (CVS) - Calibration 
+| Certificate Verification System (CVS) - Reports 
 | TUV Austria Bureau of Inspection & Certification 
 | Developed by: Swad Ahmed Mahfuz (Head of Division - Business Assurance & Training, Bangladesh)
 | Contact: swad.mahfuz@gmail.com, +1-725-867-7718, +88 01733 023 008
 | Project Start: 12 October 2022
-| Latest Stable Release: v3.2.2 -  16 August 2025
+| Latest Stable Release: v3.3.1 -  25 August 2025
 |--------------------------------------------------------------------------
 */
 
@@ -140,64 +140,62 @@ class CertificateController extends Controller
     {
         if (Auth::check()) {
             $request->validate([
-                'certificate_number'   => 'required|unique:calibration_certificates',
-                'calibrator'           => 'required',
-                'client_name'          => 'required',
-                'location'             => 'required',
-                'equipment_name'       => 'required',
-                'equipment_brand'      => 'required',
-                'equipment_id'         => 'required',
-                'calibration_date'     => 'required',
+                'certificate_number'    => 'required|unique:certificates_report,certificate_number',
+                'client_name'           => 'required',
+                'report_prepared_by'    => 'required',
+                'report_approved_by'    => 'required',
                 'report_issue_date'     => 'required',
-                'review_by'            => 'required',
-                'approval_by'          => 'required',
+                'report_validity_date'  => 'nullable',
+                'location'              => 'nullable',
+                'team_members'          => 'nullable',
+                'report_revision'       => 'nullable',
+                'report_remarks'        => 'nullable',
+                'report_internal_notes' => 'nullable',
+                'review_by'             => 'required',
+                'approval_by'           => 'required',
             ]);
 
-            $review_by_user = User::where('name', $request->review_by)->first();
-            if ($review_by_user) {
-                $review_by_user_id = $review_by_user->id; // Store the found user ID in a variable
-            } else {
-                $review_by_user_id = null; // Handle cases where no matching user is found
-            }
+            $review_by_user   = User::where('name', $request->review_by)->first();
+            $review_by_user_id = $review_by_user ? $review_by_user->id : null;
 
-            $approval_by_user = User::where('name', $request->approval_by)->first();
-            if ($approval_by_user) {
-                $approval_by_user_id = $approval_by_user->id; // Store the found user ID in a variable
-            } else {
-                $approval_by_user_id = null; // Handle cases where no matching user is found
-            }
+            $approval_by_user   = User::where('name', $request->approval_by)->first();
+            $approval_by_user_id = $approval_by_user ? $approval_by_user->id : null;
 
             $certificate = new Certificate();
-            $certificate->certificate_number = $request->certificate_number;
-            $certificate->calibrator = $request->calibrator;
-            $certificate->client_name = $request->client_name;
-            $certificate->location = $request->location;
-            $certificate->equipment_name = $request->equipment_name;
-            $certificate->equipment_brand = $request->equipment_brand;
-            $certificate->equipment_id = $request->equipment_id;
-            $certificate->calibration_date = $request->calibration_date;
-            $certificate->report_issue_date = $request->report_issue_date;
-            $certificate->validity_date = $request->validity_date;
-            $certificate->calibration_remarks = $request->calibration_remarks;
-            $certificate->calibration_internal_notes = $request->calibration_internal_notes;
-            
-            $certificate->status = 'Pending Review';
-            $certificate->created_by = Auth::user()->name;
-            $certificate->created_by_id = Auth::user()->id;
-            $certificate->created_at = Carbon::now();
-            $certificate->review_by = $request->review_by;
-            $certificate->review_by_id = $review_by_user_id;
-            $certificate->approval_by = $request->approval_by;
+            $certificate->certificate_number     = $request->certificate_number;
+            $certificate->client_name            = $request->client_name;
+            $certificate->location               = $request->location;
+            $certificate->team_members           = $request->team_members;
+            $certificate->report_prepared_by     = $request->report_prepared_by;    ///Different from 'created_by' which is the user who created the certificate in the system
+            $certificate->report_approved_by     = $request->report_approved_by;    ///Different from 'approval_by' which is the user who approved the certificate in the system
+            $certificate->report_issue_date      = $request->report_issue_date;
+            $certificate->report_validity_date   = $request->report_validity_date;
+            $certificate->report_revision        = $request->report_revision;
+            $certificate->report_remarks         = $request->report_remarks;
+            $certificate->report_internal_notes  = $request->report_internal_notes;
+
+            $certificate->status         = 'Pending Review';
+            $certificate->created_by     = Auth::user()->name;
+            $certificate->created_by_id  = Auth::user()->id;
+            $certificate->created_at     = Carbon::now();
+
+            $certificate->review_by      = $request->review_by;
+            $certificate->review_by_id   = $review_by_user_id;
+            $certificate->approval_by    = $request->approval_by;
             $certificate->approval_by_id = $approval_by_user_id;
-            $certificate->updated_by = Auth::user()->name;
-            $certificate->updated_by_id = Auth::user()->id;
-            $certificate->updated_at = Carbon::now();
+
+            $certificate->updated_by     = Auth::user()->name;
+            $certificate->updated_by_id  = Auth::user()->id;
+            $certificate->updated_at     = Carbon::now();
+
             $certificate->save();
+
             return redirect('/view-certificate/' . $certificate->id);
         }
 
         return redirect()->route('certificate.search');
     }
+
 
     public function viewCertificate($id)
     {
@@ -224,58 +222,53 @@ class CertificateController extends Controller
     {
         if (Auth::check()) {
             $request->validate([
-                'certificate_number' => 'required',
-                'calibrator'         => 'required',
-                'client_name'        => 'required',
-                'location'           => 'required',
-                'equipment_name'     => 'required',
-                'equipment_brand'    => 'required',
-                'equipment_id'       => 'required',
-                'calibration_date'   => 'required',
-                'report_issue_date'  => 'required',
-                'review_by'          => 'required',
-                'approval_by'        => 'required',
+                'certificate_number'    => 'required',
+                'client_name'           => 'required',
+                'report_prepared_by'    => 'required',
+                'report_approved_by'    => 'required',
+                'report_issue_date'     => 'required',
+                'report_validity_date'  => 'nullable',
+                'location'              => 'nullable',
+                'team_members'          => 'nullable',
+                'report_revision'       => 'nullable',
+                'report_remarks'        => 'nullable',
+                'report_internal_notes' => 'nullable',
+                'review_by'             => 'required',
+                'approval_by'           => 'required',
             ]);
 
-            $review_by_user = User::where('name', $request->review_by)->first();
-            if ($review_by_user) {
-                $review_by_user_id = $review_by_user->id; // Store the found user ID in a variable
-            } else {
-                $review_by_user_id = null; // Handle cases where no matching user is found
-            }
+            $review_by_user     = User::where('name', $request->review_by)->first();
+            $review_by_user_id  = $review_by_user ? $review_by_user->id : null;
 
-            $approval_by_user = User::where('name', $request->approval_by)->first();
-            if ($approval_by_user) {
-                $approval_by_user_id = $approval_by_user->id; // Store the found user ID in a variable
-            } else {
-                $approval_by_user_id = null; // Handle cases where no matching user is found
-            }
+            $approval_by_user    = User::where('name', $request->approval_by)->first();
+            $approval_by_user_id = $approval_by_user ? $approval_by_user->id : null;
 
             $certificate = Certificate::find($request->id);
-            
-            $certificate->certificate_number        = $request->certificate_number;
-            $certificate->calibrator                = $request->calibrator;
-            $certificate->client_name               = $request->client_name;
-            $certificate->location                  = $request->location;
-            $certificate->equipment_name            = $request->equipment_name;
-            $certificate->equipment_brand           = $request->equipment_brand;
-            $certificate->equipment_id              = $request->equipment_id;
-            $certificate->calibration_date          = $request->calibration_date;
-            $certificate->report_issue_date         = $request->report_issue_date;
-            $certificate->validity_date             = $request->validity_date;
-            $certificate->calibration_remarks       = $request->calibration_remarks;
-            $certificate->calibration_internal_notes= $request->calibration_internal_notes;
 
-            $certificate->status = 'Pending Review';
-            $certificate->review_by = $request->review_by;
-            $certificate->review_by_id = $review_by_user_id;
-            $certificate->reviewed_at = null;
-            $certificate->approval_by = $request->approval_by;
+            $certificate->certificate_number     = $request->certificate_number;
+            $certificate->client_name            = $request->client_name;
+            $certificate->location               = $request->location;
+            $certificate->team_members           = $request->team_members;
+            $certificate->report_prepared_by     = $request->report_prepared_by;
+            $certificate->report_approved_by     = $request->report_approved_by;
+            $certificate->report_issue_date      = $request->report_issue_date;
+            $certificate->report_validity_date   = $request->report_validity_date;
+            $certificate->report_revision        = $request->report_revision;
+            $certificate->report_remarks         = $request->report_remarks;
+            $certificate->report_internal_notes  = $request->report_internal_notes;
+
+            $certificate->status         = 'Pending Review';
+            $certificate->review_by      = $request->review_by;
+            $certificate->review_by_id   = $review_by_user_id;
+            $certificate->reviewed_at    = null;
+            $certificate->approval_by    = $request->approval_by;
             $certificate->approval_by_id = $approval_by_user_id;
-            $certificate->approved_at = null;
-            $certificate->updated_by = Auth::user()->name;
-            $certificate->updated_by_id = Auth::user()->id;
-            $certificate->updated_at = Carbon::now();
+            $certificate->approved_at    = null;
+
+            $certificate->updated_by     = Auth::user()->name;
+            $certificate->updated_by_id  = Auth::user()->id;
+            $certificate->updated_at     = Carbon::now();
+
             $certificate->save();
 
             return redirect('/view-certificate/' . $certificate->id);
@@ -283,6 +276,7 @@ class CertificateController extends Controller
 
         return redirect()->route('certificate.search');
     }
+
 
     // Function to review a certificate
     public function reviewCertificate($id)
@@ -345,13 +339,13 @@ class CertificateController extends Controller
     public function bulkReview()
     {
         $user = Auth::user();
-    
+
         // Mark all 'Pending Review' certificates assigned to the logged-in reviewer
-        $updated = DB::table('calibration_certificates')
+        $updated = DB::table('certificates_report') // changed table name
             ->where('status', 'Pending Review')
             ->where(function ($query) use ($user) {
                 $query->where('review_by_id', $user->id)
-                      ->orWhere('review_by', $user->name);
+                    ->orWhere('review_by', $user->name);
             })
             ->update([
                 'status' => 'Pending Approval',
@@ -360,20 +354,21 @@ class CertificateController extends Controller
                 'updated_at' => Carbon::now(),
                 'reviewed_at' => Carbon::now(),
             ]);
-    
+
         return redirect()->back()->with('success', "$updated certificate(s) marked as Reviewed.");
     }
-    
+
+
     public function bulkApprove()
     {
         $user = Auth::user();
-    
+
         // Mark all 'Pending Approval' certificates assigned to the logged-in approver
-        $updated = DB::table('calibration_certificates')
+        $updated = DB::table('certificates_report') 
             ->where('status', 'Pending Approval')
             ->where(function ($query) use ($user) {
                 $query->where('approval_by_id', $user->id)
-                      ->orWhere('approval_by', $user->name);
+                    ->orWhere('approval_by', $user->name);
             })
             ->update([
                 'status' => 'Approved',
@@ -382,9 +377,10 @@ class CertificateController extends Controller
                 'updated_at' => Carbon::now(),
                 'approved_at' => Carbon::now(),
             ]);
-    
+
         return redirect()->back()->with('success', "$updated certificate(s) marked as Approved.");
     }
+
 
     public function deleteCertificate($id)
     {
@@ -420,7 +416,7 @@ class CertificateController extends Controller
     public function uploadPdf(Request $request, $id)
     {
         $request->validate([
-            'certificate_pdf' => 'required|mimes:pdf|max:30720', // max 30MB
+            'certificate_pdf' => 'required|mimes:pdf|max:102400', // max 100MB
         ]);
 
         $certificate = Certificate::findOrFail($id);
@@ -440,15 +436,15 @@ class CertificateController extends Controller
             return back()->with('error', 'You are not authorized to upload this certificate.');
         }
 
-        $destinationPath = public_path('Certificate PDFs'); // Now inside public
-        // Create directory if not exists
+        $destinationPath = public_path('Certificate PDFs'); // keep as-is
         if (!file_exists($destinationPath)) {
             mkdir($destinationPath, 0755, true);
         }
 
         $pdfFile = $request->file('certificate_pdf');
         $timestamp = Carbon::now()->format('YmdHi');
-        $fileName = 'TUVAT Calib Cert - ' . $certificate->client_name . ' ' . $timestamp . '.' . $pdfFile->getClientOriginalExtension();
+        // CHANGED: filename prefix for Reports CVS
+        $fileName = 'TUVAT Report Cert - ' . $certificate->client_name . ' ' . $timestamp . '.' . $pdfFile->getClientOriginalExtension();
 
         $pdfFile->move($destinationPath, $fileName);
 
@@ -463,6 +459,7 @@ class CertificateController extends Controller
 
         return back()->with('success', 'Certificate PDF uploaded successfully.');
     }
+
 
     public function downloadPdf($id)
     {
@@ -503,9 +500,15 @@ class CertificateController extends Controller
                 $result = Certificate::orderBy('certificate_number', 'desc')->paginate($perPage);
             } else {
                 $result = Certificate::where(function ($query) use ($userInput) {
-                    $query->where('certificate_number', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('inspector', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('client_name', 'LIKE', '%' . $userInput . '%');
+                    $like = '%'.$userInput.'%';
+                    $query->where('certificate_number', 'LIKE', $like)
+                        ->orWhere('client_name', 'LIKE', $like)
+                        ->orWhere('location', 'LIKE', $like)
+                        ->orWhere('team_members', 'LIKE', $like)
+                        ->orWhere('report_prepared_by', 'LIKE', $like)
+                        ->orWhere('report_approved_by', 'LIKE', $like)
+                        ->orWhere('report_issue_date', 'LIKE', $like)
+                        ->orWhere('status', 'LIKE', $like);
                 })->orderBy('certificate_number', 'desc')->paginate($perPage);
             }
 
@@ -515,6 +518,7 @@ class CertificateController extends Controller
         return redirect()->route('certificate.search');
     }
 
+
     public function liveSearchDeleted(Request $request)
     {
         if (Auth::check()) {
@@ -522,17 +526,24 @@ class CertificateController extends Controller
             $userInput = $request->input('userInput', '');
             
             if (empty($userInput)) {
-                // If the search input is empty, return all certificates ordered by certificate_number descending with pagination
-                $result = Certificate::onlyTrashed()->orderBy('certificate_number', 'desc')->paginate($perPage);
-            } else {
                 $result = Certificate::onlyTrashed()
-                ->where(function ($query) use ($userInput) {
-                    $query->where('certificate_number', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('inspector', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('client_name', 'LIKE', '%' . $userInput . '%');
-                })
-                ->orderBy('certificate_number', 'desc')
-                ->paginate($perPage);
+                    ->orderBy('certificate_number', 'desc')
+                    ->paginate($perPage);
+            } else {
+                $like = '%'.$userInput.'%';
+                $result = Certificate::onlyTrashed()
+                    ->where(function ($query) use ($like) {
+                        $query->where('certificate_number', 'LIKE', $like)
+                            ->orWhere('client_name', 'LIKE', $like)
+                            ->orWhere('location', 'LIKE', $like)
+                            ->orWhere('team_members', 'LIKE', $like)
+                            ->orWhere('report_prepared_by', 'LIKE', $like)
+                            ->orWhere('report_approved_by', 'LIKE', $like)
+                            ->orWhere('report_issue_date', 'LIKE', $like)
+                            ->orWhere('status', 'LIKE', $like);
+                    })
+                    ->orderBy('certificate_number', 'desc')
+                    ->paginate($perPage);
             }
 
             return response()->json(['data' => $result]);
@@ -544,62 +555,53 @@ class CertificateController extends Controller
     public function liveSearchPending(Request $request)
     {
         if (Auth::check()) {
-            $perPage = 100; // Number of certificates per page
+            $perPage  = 100;
             $userInput = $request->input('userInput', '');
-            $userId = Auth::user()->id;
-            $userName = Auth::user()->name;
-    
+            $userId    = Auth::user()->id;
+            $userName  = Auth::user()->name;
+
+            // Base scope: only items pending for this user (review or approval)
+            $assignedPendingScope = function ($q) use ($userId, $userName) {
+                $q->where(function ($q1) use ($userId, $userName) {
+                    $q1->where('status', 'Pending Review')
+                    ->where(function ($sub) use ($userId, $userName) {
+                        $sub->where('review_by_id', $userId)
+                            ->orWhere('review_by', $userName);
+                    });
+                })->orWhere(function ($q2) use ($userId, $userName) {
+                    $q2->where('status', 'Pending Approval')
+                    ->where(function ($sub) use ($userId, $userName) {
+                        $sub->where('approval_by_id', $userId)
+                            ->orWhere('approval_by', $userName);
+                    });
+                });
+            };
+
             if (empty($userInput)) {
-                // If the search input is empty, return only pending review and approval certificates assigned to the logged-in user
-                $result = Certificate::where(function ($query) use ($userId, $userName) {
-                    $query->where(function ($q) use ($userId, $userName) {
-                        $q->where('status', 'Pending Review')
-                          ->where(function ($subQuery) use ($userId, $userName) {
-                              $subQuery->where('review_by_id', $userId)
-                                       ->orWhere('review_by', $userName);
-                          });
-                    })
-                    ->orWhere(function ($q) use ($userId, $userName) {
-                        $q->where('status', 'Pending Approval')
-                          ->where(function ($subQuery) use ($userId, $userName) {
-                              $subQuery->where('approval_by_id', $userId)
-                                       ->orWhere('approval_by', $userName);
-                          });
-                    });
-                })
-                ->orderBy('certificate_number', 'desc')
-                ->paginate($perPage);
+                $result = Certificate::where($assignedPendingScope)
+                    ->orderBy('certificate_number', 'desc')
+                    ->paginate($perPage);
             } else {
-                // Search within pending review and approval certificates assigned to the logged-in user
-                $result = Certificate::where(function ($query) use ($userInput) {
-                    $query->where('certificate_number', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('inspector', 'LIKE', '%' . $userInput . '%')
-                        ->orWhere('client_name', 'LIKE', '%' . $userInput . '%');
-                })
-                ->where(function ($query) use ($userId, $userName) {
-                    $query->where(function ($q) use ($userId, $userName) {
-                        $q->where('status', 'Pending Review')
-                          ->where(function ($subQuery) use ($userId, $userName) {
-                              $subQuery->where('review_by_id', $userId)
-                                       ->orWhere('review_by', $userName);
-                          });
+                $like = '%'.$userInput.'%';
+                $result = Certificate::where($assignedPendingScope)
+                    ->where(function ($q) use ($like) {
+                        $q->where('certificate_number', 'LIKE', $like)
+                        ->orWhere('client_name', 'LIKE', $like)
+                        ->orWhere('location', 'LIKE', $like)
+                        ->orWhere('team_members', 'LIKE', $like)
+                        ->orWhere('report_prepared_by', 'LIKE', $like)
+                        ->orWhere('report_approved_by', 'LIKE', $like)
+                        ->orWhere('report_issue_date', 'LIKE', $like)
+                        ->orWhere('status', 'LIKE', $like);
                     })
-                    ->orWhere(function ($q) use ($userId, $userName) {
-                        $q->where('status', 'Pending Approval')
-                          ->where(function ($subQuery) use ($userId, $userName) {
-                              $subQuery->where('approval_by_id', $userId)
-                                       ->orWhere('approval_by', $userName);
-                          });
-                    });
-                })
-                ->orderBy('certificate_number', 'desc')
-                ->paginate($perPage);
+                    ->orderBy('certificate_number', 'desc')
+                    ->paginate($perPage);
             }
-    
+
             return response()->json(['data' => $result]);
-        } else {
-            return redirect()->route('certificate.search');
         }
+
+        return redirect()->route('certificate.search');
     }
 
     public function importExportView()
@@ -615,8 +617,8 @@ class CertificateController extends Controller
     {
         if (Auth::check()) {
             $today = Carbon::now()->format('d-m-Y');
-            $fileName = 'TUV Austria BIC Inspection Certificate DB on ' . $today . '.xlsx';
-            return Excel::download(new CertificateExport, $fileName);
+            $fileName = 'TUV Austria BIC Report Certificate DB on ' . $today . '.xlsx'; // changed label
+            return Excel::download(new ReportCertificateExport, $fileName); // changed export class
         }
 
         return redirect()->route('certificate.search');
@@ -625,10 +627,11 @@ class CertificateController extends Controller
     public function import()
     {
         if (Auth::check()) {
-            Excel::import(new CertificateImport, request()->file('file'));
+            Excel::import(new ReportCertificateImport, request()->file('file')); // changed import class
             return redirect('/dashboard');
         }
 
         return redirect()->route('certificate.search');
     }
+
 }

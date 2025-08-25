@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TÜV Austria BIC CVS | Deleted Calibration Certificates</title>
+    <title>TÜV Austria BIC CVS | Deleted Report Certificates</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
@@ -33,7 +33,7 @@
         .btn i { font-size: 16px; }
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
         }
         .table-striped { font-size: 11px; }
     </style>
@@ -46,7 +46,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h6 class="text-end">Logged in User: <b>{{ auth()->user()->name }} ({{ auth()->user()->designation }})</b></h6>
-                        <h3 class="text-center mb-3">TÜV Austria BIC - Calibration Certificate Verification System (CVS)</h3>
+                        <h3 class="text-center mb-3">TÜV Austria BIC - Reports Certificate Verification System (CVS)</h3>
                         <table class="mx-auto mb-3" style="width: 80%;">
                             <tr>
                                 <td><a href="add-certificate" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Add New Certificate</a></td>
@@ -63,15 +63,15 @@
                     <div class="card-body">
                         <table class="table table-striped search-result">
                             <thead>
-                                <tr><th colspan="12" class="text-center fs-5 fw-bold">Deleted Calibration Certificates</th></tr>
+                                <tr><th colspan="11" class="text-center fs-5 fw-bold">Deleted Report Certificates</th></tr>
                                 <tr>
                                     <th>Sl.</th>
                                     <th>Certificate No</th>
-                                    <th>Calibration Engg</th>
                                     <th>Client</th>
-                                    <th>Equipment</th>
-                                    <th>Calibration Date</th>
-                                    <th>Report Issue Date</th>
+                                    <th>Team Members</th>
+                                    <th>Prepared By</th>
+                                    <th>Approved By</th>
+                                    <th>Issue Date</th>
                                     <th>Validity</th>
                                     <th>Status</th>
                                     <th>QR Code</th>
@@ -106,12 +106,12 @@
                         html += '<tr>' +
                             '<td>' + (index + 1 + (res.data.current_page - 1) * res.data.per_page) + '.</td>' +
                             '<td>' + (data.certificate_number ?? '') + '</td>' +
-                            '<td>' + (data.calibrator ?? '') + '</td>' +
                             '<td>' + (data.client_name ?? '') + '</td>' +
-                            '<td>' + (data.equipment_name ?? '') + '</td>' +
-                            '<td>' + formatDate(data.calibration_date) + '</td>' +
+                            '<td>' + (data.team_members ?? '') + '</td>' +
+                            '<td>' + (data.report_prepared_by ?? '') + '</td>' +
+                            '<td>' + (data.report_approved_by ?? '') + '</td>' +
                             '<td>' + formatDate(data.report_issue_date) + '</td>' +
-                            '<td>' + (data.validity_date ? formatDate(data.validity_date) : 'N/A') + '</td>' +
+                            '<td>' + (data.report_validity_date ? formatDate(data.report_validity_date) : 'N/A') + '</td>' +
                             '<td>' + (data.status ?? '') + '</td>' +
                             '<td><img src="' + generateQRCode(url) + '"/></td>' +
                             '<td><a href="view-certificate/' + data.id + '" target="_blank"><i class="fa-solid fa-circle-info" title="View"></i></a></td>' +

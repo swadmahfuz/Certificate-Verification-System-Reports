@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TÜV Austria BIC CVS | Pending Calibration Certificates</title>
+    <title>TÜV Austria BIC CVS | Pending Report Certificates</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -44,7 +44,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h6 class="text-end">Logged in User: <b>{{ auth()->user()->name }} ({{ auth()->user()->designation }})</b></h6>
-                        <h3 class="text-center mb-3">TÜV Austria BIC - Calibration Certificate Verification System (CVS)</h3>
+                        <h3 class="text-center mb-3">TÜV Austria BIC - Reports Certificate Verification System (CVS)</h3>
                         <table class="mx-auto mb-3" style="width: 80%;">
                             <tr>
                                 <td><a href="add-certificate" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Add New Certificate</a></td>
@@ -74,13 +74,13 @@
                                 <tr><th colspan="12" class="text-center fs-5 fw-bold">Certificates Pending Review/Approval</th></tr>
                                 <tr>
                                     <th>Sl.</th>
-                                    <th>Certificate ID</th>
-                                    <th>Calibration Engg</th>
+                                    <th>Certificate No</th>
                                     <th>Client</th>
                                     <th>Location</th>
-                                    <th>Equipment</th>
-                                    <th>Calibration Date</th>
-                                    <th>Report Issue Date</th>
+                                    <th>Team Members</th>
+                                    <th>Prepared By</th>
+                                    <th>Approved By</th>
+                                    <th>Issue Date</th>
                                     <th>Validity</th>
                                     <th>Status</th>
                                     <th>QR Code</th>
@@ -113,13 +113,13 @@
                         html += '<tr>' +
                                 '<td>' + (i + 1 + (res.data.current_page - 1) * res.data.per_page) + '.</td>' +
                                 '<td>' + (d.certificate_number ?? '') + '</td>' +
-                                '<td>' + (d.calibrator ?? '') + '</td>' +
                                 '<td>' + (d.client_name ?? '') + '</td>' +
                                 '<td>' + (d.location ?? '') + '</td>' +
-                                '<td>' + (d.equipment_name ?? '') + '</td>' +
-                                '<td>' + formatDate(d.calibration_date) + '</td>' +
+                                '<td>' + (d.team_members ?? '') + '</td>' +
+                                '<td>' + (d.report_prepared_by ?? '') + '</td>' +
+                                '<td>' + (d.report_approved_by ?? '') + '</td>' +
                                 '<td>' + formatDate(d.report_issue_date) + '</td>' +
-                                '<td>' + (d.validity_date ? formatDate(d.validity_date) : 'N/A') + '</td>' +
+                                '<td>' + (d.report_validity_date ? formatDate(d.report_validity_date) : 'N/A') + '</td>' +
                                 '<td>' + (d.status ?? '') + '</td>' +
                                 '<td><img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=' + encodeURIComponent(url) + '"/></td>' +
                                 '<td>' +
