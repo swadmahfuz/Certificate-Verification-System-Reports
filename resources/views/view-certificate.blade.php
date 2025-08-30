@@ -19,6 +19,10 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
         .btn-container { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .card-header { background-color: #f4f4f4; padding: 20px; }
+        /* Optional: make the header toggle look like plain text but clickable */
+        .header-toggle.btn-link { text-decoration: none; padding: 0; }
+        .header-toggle .chev { transition: transform .2s ease; }
+        .header-toggle[aria-expanded="true"] .chev { transform: rotate(90deg); }
     </style>
 </head>
 <body background="../images/tuv-login-background1.jpg">
@@ -27,12 +31,6 @@
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
-                @php
-                    // IDs used for the toggleable viewer
-                    $collapseId = 'pdfViewerCollapse-' . $certificate->id;
-                    $toggleId   = 'togglePdfBtn-' . $certificate->id;
-                @endphp
-
                 <h3>TÜV Austria BIC CVS - Detailed Report Certificate Information</h3>
                 <div class="btn-container mt-3">
                     <a href="../dashboard" class="btn btn-primary"><i class="fa-solid fa-arrow-left me-1"></i> Go back to Dashboard</a>
@@ -44,18 +42,6 @@
                             <a href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank" class="btn btn-secondary">
                                 <i class="fa-solid fa-file-pdf me-1"></i> Download Certificate PDF
                             </a>
-
-                            {{-- Toggle button only when PDF exists --}}
-                            <button
-                                id="{{ $toggleId }}"
-                                class="btn btn-outline-primary"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#{{ $collapseId }}"
-                                aria-expanded="false"
-                                aria-controls="{{ $collapseId }}">
-                                <i class="fa-solid fa-eye me-1"></i> Show PDF
-                            </button>
                         @endif
 
                         @if(Auth::check() && (Auth::user()->id == $certificate->review_by_id || Auth::user()->name == $certificate->review_by) && $certificate->status == 'Pending Review')
@@ -259,27 +245,42 @@
                     </tbody>
                 </table>
 
-                {{-- Toggleable Inline PDF Viewer (only renders when PDF exists) --}}
+                {{-- Toggleable Inline PDF Viewer (toggle is in the header title area) --}}
                 @if($certificate->certificate_pdf)
                     @php
-                        // ViewerJS base (published under public/)
-                        // If your server exposes /laraview/ directly, use: asset('laraview/index.html')
+                        // Build ViewerJS URL (assets published under /public/laraview/)
+                        // If your server exposes /laraview/ directly, change to asset('laraview/index.html')
                         $viewerBase = asset('public/laraview/index.html');
-
                         $pdfFolder  = 'Certificate PDFs';
                         $viewerSrc  = $viewerBase
                                       . '#../' . rawurlencode($pdfFolder)
                                       . '/'    . rawurlencode($certificate->certificate_pdf);
+
+                        $collapseId = 'pdfViewerCollapse-' . $certificate->id;
+                        $toggleId   = 'togglePdfHeaderBtn-' . $certificate->id;
                     @endphp
 
-                    <div class="collapse mt-4" id="{{ $collapseId }}">
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <span><i class="fa-solid fa-file-pdf me-2"></i>Inline PDF Preview</span>
-                                <small class="text-muted">
-                                    If it doesn’t load, <a href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank">download</a>.
-                                </small>
-                            </div>
+                    <div class="card mt-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            {{-- This button looks like plain text and toggles the collapse --}}
+                            <button
+                                id="{{ $toggleId }}"
+                                class="btn btn-link header-toggle d-flex align-items-center"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#{{ $collapseId }}"
+                                aria-expanded="false"
+                                aria-controls="{{ $collapseId }}">
+                                <i class="fa-solid fa-chevron-right me-2 chev"></i>
+                                <span>Inline PDF Preview</span>
+                            </button>
+
+                            <small class="text-muted">
+                                If it doesn’t load, <a href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank">download</a>.
+                            </small>
+                        </div>
+
+                        <div class="collapse" id="{{ $collapseId }}">
                             <div class="card-body p-0" style="height: 75vh;">
                                 {{-- Lazy-load the viewer only when opened --}}
                                 <iframe
@@ -306,11 +307,11 @@
                                 if (!iframe.getAttribute('src')) {
                                     iframe.setAttribute('src', iframe.dataset.viewerSrc);
                                 }
-                                btn.innerHTML = '<i class="fa-solid fa-eye-slash me-1"></i> Hide PDF';
+                                btn.setAttribute('aria-expanded', 'true');
                             });
 
                             collapseEl.addEventListener('hide.bs.collapse', function () {
-                                btn.innerHTML = '<i class="fa-solid fa-eye me-1"></i> Show PDF';
+                                btn.setAttribute('aria-expanded', 'false');
                                 // Optional: unload to free memory
                                 // iframe.removeAttribute('src');
                             });
