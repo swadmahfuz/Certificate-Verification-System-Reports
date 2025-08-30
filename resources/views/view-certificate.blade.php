@@ -272,7 +272,7 @@
                                 aria-expanded="false"
                                 aria-controls="{{ $collapseId }}">
                                 <i class="fa-solid fa-chevron-right me-2 chev"></i>
-                                <span>Inline PDF Preview</span>
+                                <span>Certificate PDF Preview</span>
                             </button>
 
                             <small class="text-muted">
