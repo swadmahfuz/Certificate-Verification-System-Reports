@@ -27,17 +27,37 @@
     <div class="container">
         <div class="card">
             <div class="card-header text-center">
+                @php
+                    // IDs used for the toggleable viewer
+                    $collapseId = 'pdfViewerCollapse-' . $certificate->id;
+                    $toggleId   = 'togglePdfBtn-' . $certificate->id;
+                @endphp
+
                 <h3>TÜV Austria BIC CVS - Detailed Report Certificate Information</h3>
                 <div class="btn-container mt-3">
                     <a href="../dashboard" class="btn btn-primary"><i class="fa-solid fa-arrow-left me-1"></i> Go back to Dashboard</a>
                     @if($certificate->status !== 'Deleted')
                         <a href="../add-certificate" class="btn btn-success"><i class="fa-solid fa-plus me-1"></i> Add New Certificate</a>
                         <a href="../edit-certificate/{{ $certificate->id }}" class="btn btn-warning"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Certificate</a>
+
                         @if($certificate->certificate_pdf)
                             <a href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank" class="btn btn-secondary">
                                 <i class="fa-solid fa-file-pdf me-1"></i> Download Certificate PDF
                             </a>
+
+                            {{-- Toggle button only when PDF exists --}}
+                            <button
+                                id="{{ $toggleId }}"
+                                class="btn btn-outline-primary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#{{ $collapseId }}"
+                                aria-expanded="false"
+                                aria-controls="{{ $collapseId }}">
+                                <i class="fa-solid fa-eye me-1"></i> Show PDF
+                            </button>
                         @endif
+
                         @if(Auth::check() && (Auth::user()->id == $certificate->review_by_id || Auth::user()->name == $certificate->review_by) && $certificate->status == 'Pending Review')
                             <a href="{{ route('certificate.review', $certificate->id) }}" class="btn btn-info"><i class="fa-solid fa-thumbs-up me-1"></i> Mark as Reviewed</a>
                         @endif
@@ -238,6 +258,70 @@
                         </tr>
                     </tbody>
                 </table>
+
+                {{-- Toggleable Inline PDF Viewer (only renders when PDF exists) --}}
+                @if($certificate->certificate_pdf)
+                    @php
+                        // ViewerJS base (published under public/)
+                        // If your server exposes /laraview/ directly, use: asset('laraview/index.html')
+                        $viewerBase = asset('public/laraview/index.html');
+
+                        $pdfFolder  = 'Certificate PDFs';
+                        $viewerSrc  = $viewerBase
+                                      . '#../' . rawurlencode($pdfFolder)
+                                      . '/'    . rawurlencode($certificate->certificate_pdf);
+                    @endphp
+
+                    <div class="collapse mt-4" id="{{ $collapseId }}">
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-file-pdf me-2"></i>Inline PDF Preview</span>
+                                <small class="text-muted">
+                                    If it doesn’t load, <a href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank">download</a>.
+                                </small>
+                            </div>
+                            <div class="card-body p-0" style="height: 75vh;">
+                                {{-- Lazy-load the viewer only when opened --}}
+                                <iframe
+                                    data-viewer-src="{{ $viewerSrc }}"
+                                    title="Certificate PDF"
+                                    style="width:100%; height:100%; border:0;"
+                                    allow="fullscreen"
+                                    loading="lazy"></iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Toggle & lazy-load logic --}}
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const collapseEl = document.getElementById('{{ $collapseId }}');
+                            const btn        = document.getElementById('{{ $toggleId }}');
+                            if (!collapseEl || !btn) return;
+
+                            const iframe = collapseEl.querySelector('iframe');
+
+                            collapseEl.addEventListener('show.bs.collapse', function () {
+                                // Load the viewer src only on first open
+                                if (!iframe.getAttribute('src')) {
+                                    iframe.setAttribute('src', iframe.dataset.viewerSrc);
+                                }
+                                btn.innerHTML = '<i class="fa-solid fa-eye-slash me-1"></i> Hide PDF';
+                            });
+
+                            collapseEl.addEventListener('hide.bs.collapse', function () {
+                                btn.innerHTML = '<i class="fa-solid fa-eye me-1"></i> Show PDF';
+                                // Optional: unload to free memory
+                                // iframe.removeAttribute('src');
+                            });
+                        });
+                    </script>
+                @else
+                    <div class="alert alert-warning mt-4">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                        No certificate PDF uploaded yet.
+                    </div>
+                @endif
             </div>
         </div>
     </div>
