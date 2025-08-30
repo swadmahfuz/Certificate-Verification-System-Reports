@@ -618,7 +618,7 @@ class CertificateController extends Controller
         if (Auth::check()) {
             $today = Carbon::now()->format('d-m-Y');
             $fileName = 'TUV Austria BIC Report Certificate DB on ' . $today . '.xlsx'; // changed label
-            return Excel::download(new ReportCertificateExport, $fileName); // changed export class
+            return Excel::download(new CertificateExport, $fileName); // changed export class
         }
 
         return redirect()->route('certificate.search');
@@ -627,7 +627,7 @@ class CertificateController extends Controller
     public function import()
     {
         if (Auth::check()) {
-            Excel::import(new ReportCertificateImport, request()->file('file')); // changed import class
+            Excel::import(new CertificateImport, request()->file('file')); // changed import class
             return redirect('/dashboard');
         }
 

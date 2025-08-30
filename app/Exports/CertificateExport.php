@@ -16,7 +16,7 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 |--------------------------------------------------------------------------
 */
 
-class ReportCertificateExport implements FromCollection, WithHeadings
+class CertificateExport implements FromCollection, WithHeadings
 {
     /**
      * @return \Illuminate\Support\Collection

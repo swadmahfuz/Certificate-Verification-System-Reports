@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 */
 
-class ReportCertificateImport implements ToModel, WithHeadingRow
+class CertificateImport implements ToModel, WithHeadingRow
 {
     /**
      * Map Excel rows to Certificate model.
