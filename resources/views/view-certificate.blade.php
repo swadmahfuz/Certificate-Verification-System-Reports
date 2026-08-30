@@ -21,17 +21,20 @@
             <i class="fa-solid fa-arrow-left me-1"></i> Back to Certificates
         </a>
         @if($certificate->status !== 'Deleted')
+            @canMutate
             <a class="btn btn-primary btn-sm" href="{{ route('certificate.createForm') }}">
                 <i class="fa-solid fa-plus me-1"></i> Add New
             </a>
             <a class="btn btn-warning btn-sm" href="{{ route('certificate.edit', $certificate->id) }}">
                 <i class="fa-solid fa-pen-to-square me-1"></i> Edit
             </a>
+            @endcanMutate
             @if($certificate->certificate_pdf)
                 <a class="btn btn-secondary btn-sm" href="{{ route('certificate.downloadPdf', $certificate->id) }}" target="_blank">
                     <i class="fa-solid fa-file-pdf me-1"></i> Download PDF
                 </a>
             @endif
+            @canMutate
             @if(Auth::id() == $certificate->review_by_id && $certificate->status == 'Pending Review')
                 <form action="{{ route('certificate.review', $certificate->id) }}" method="POST" class="d-inline">
                     @csrf
@@ -55,10 +58,12 @@
                     <i class="fa-solid fa-trash me-1"></i> Delete
                 </button>
             </form>
+            @endcanMutate
         @endif
     </div>
 </div>
 
+@canMutate
 @if($certificate->status !== 'Deleted' &&
     (Auth::id() == $certificate->created_by_id ||
      Auth::id() == $certificate->review_by_id ||
@@ -84,6 +89,7 @@
         </div>
     </section>
 @endif
+@endcanMutate
 
 <section class="admin-card">
     <div class="admin-card-header"><h2>Report Certificate Information</h2></div>

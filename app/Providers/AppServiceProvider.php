@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,10 @@ class AppServiceProvider extends ServiceProvider
         // Keep your existing UI/database defaults
         Paginator::useBootstrap();
         Schema::defaultStringLength(191);
+
+        Password::defaults(function () {
+            return Password::min(8)->mixedCase()->numbers();
+        });
 
         View::composer(['partials.admin.header', 'partials.admin.sidebar', 'layouts.admin'], function ($view) {
             $assignments = ['review' => 0, 'approval' => 0, 'total' => 0];

@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Certificate;
 use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Jobs\ProcessCertificateImportJob;
+use App\Services\CertificateSearchService;
 use App\Services\DashboardService;
 use App\Services\ActivityLogService;
+use App\Services\PermissionService;
 use App\Exports\CertificateExport;
 use App\Imports\CertificateImport;
 use Illuminate\Http\Request;
@@ -44,20 +48,19 @@ class CertificateController extends Controller
         return view('verify-certificate', ['certificates' => $certificate]);
     }
 
-    public function addCredentials(Request $request)
+    public function addCredentials(LoginRequest $request)
     {
         $credentials = $request->only('email', 'password');
-        $email = $credentials['email'] ?? null;
+        $email = $credentials['email'];
 
-        if ($email) {
-            $existing = User::where('email', $email)->first();
+        $existing = User::where('email', $email)->first();
 
-            if ($existing && !$existing->isActive()) {
-                return redirect('/admin')->with('error', 'Your account has been deactivated. Contact an administrator.');
-            }
+        if ($existing && !$existing->isActive()) {
+            return redirect('/admin')->with('error', 'Your account has been deactivated. Contact an administrator.');
         }
 
         if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
             $user = Auth::user();
 
             if (!$user->hasVerifiedEmail()) {
@@ -72,6 +75,14 @@ class CertificateController extends Controller
             return redirect('/dashboard')->with('success', 'Thank You for authorizing. Please proceed.');
         }
 
+        $this->activityLog->record(
+            'auth.failed',
+            'auth',
+            $existing?->id,
+            'Failed login attempt for ' . $email . '.',
+            ['email' => $email]
+        );
+
         return redirect('/admin')->with('error', 'You entered the wrong credentials');
     }
 
@@ -85,17 +96,6 @@ class CertificateController extends Controller
         $certificates = Certificate::orderBy('created_at', 'DESC')->orderBy('id', 'DESC')->paginate(100);
 
         return view('certificates.index', compact('certificates'));
-    }
-
-    public function showAllUsers()
-    {
-        $users = User::withCount([
-            'certificatesCreated',
-            'certificatesReviewed',
-            'certificatesApproved',
-        ])->get();
-
-        return view('all-users', compact('users'));
     }
 
     public function getDeletedCertificates()
@@ -196,6 +196,10 @@ class CertificateController extends Controller
 
     public function editCertificate($id)
     {
+        if (!app(PermissionService::class)->canMutate()) {
+            abort(403, 'You do not have permission to edit certificates.');
+        }
+
         $certificate = Certificate::findOrFail($id);
         $users = User::all();
 
@@ -602,84 +606,56 @@ class CertificateController extends Controller
         ]);
     }
 
-    public function liveSearch(Request $request)
+    public function publicPdf($id)
+    {
+        $certificate = Certificate::findOrFail($id);
+
+        if ($certificate->status !== 'Approved' || empty($certificate->certificate_pdf)) {
+            abort(404, 'PDF not found.');
+        }
+
+        $filePath = public_path('Certificate PDFs/' . $certificate->certificate_pdf);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'PDF not found.');
+        }
+
+        $disposition = request()->boolean('download') ? 'attachment' : 'inline';
+
+        return response()->file($filePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => $disposition . '; filename="' . $certificate->certificate_pdf . '"',
+        ]);
+    }
+
+    public function liveSearch(Request $request, CertificateSearchService $searchService)
     {
         $perPage = 100;
-        $userInput = $request->input('userInput', '');
+        $userInput = (string) ($request->input('userInput') ?? '');
 
-        if (empty($userInput)) {
-            $result = Certificate::orderBy('created_at', 'DESC')->orderBy('id', 'DESC')->paginate($perPage);
-        } else {
-            $result = Certificate::where(function ($query) use ($userInput) {
-                $query->whereRaw('LOWER(certificate_number) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(client_name) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(location) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(team_members) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(report_prepared_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(report_approved_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('report_issue_date LIKE ?', ['%' . $userInput . '%'])
-                    ->orWhereRaw('report_validity_date LIKE ?', ['%' . $userInput . '%']);
-            })
-                ->orderBy('created_at', 'DESC')
-                ->orderBy('id', 'DESC')
-                ->paginate($perPage);
-        }
+        $result = $searchService->paginate(Certificate::query(), $userInput, $perPage);
 
         return response()->json(['data' => $result]);
     }
 
-    public function liveSearchDeleted(Request $request)
+    public function liveSearchDeleted(Request $request, CertificateSearchService $searchService)
     {
         $perPage = 100;
-        $userInput = $request->input('userInput', '');
+        $userInput = (string) ($request->input('userInput') ?? '');
 
-        if (empty($userInput)) {
-            $result = Certificate::onlyTrashed()->orderBy('created_at', 'DESC')->orderBy('id', 'DESC')->paginate($perPage);
-        } else {
-            $result = Certificate::onlyTrashed()
-                ->where(function ($query) use ($userInput) {
-                    $query->whereRaw('LOWER(certificate_number) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('LOWER(client_name) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('LOWER(location) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('LOWER(team_members) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('LOWER(report_prepared_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('LOWER(report_approved_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                        ->orWhereRaw('report_issue_date LIKE ?', ['%' . $userInput . '%'])
-                        ->orWhereRaw('report_validity_date LIKE ?', ['%' . $userInput . '%']);
-                })
-                ->orderBy('created_at', 'DESC')
-                ->orderBy('id', 'DESC')
-                ->paginate($perPage);
-        }
+        $result = $searchService->paginate(Certificate::onlyTrashed(), $userInput, $perPage);
 
         return response()->json(['data' => $result]);
     }
 
-    public function liveSearchPending(Request $request)
+    public function liveSearchPending(Request $request, CertificateSearchService $searchService)
     {
         $perPage = 100;
-        $userInput = $request->input('userInput', '');
+        $userInput = (string) ($request->input('userInput') ?? '');
         $assignment = $request->input('assignment');
 
         $query = $this->pendingCertificatesQuery($assignment);
-
-        if (!empty($userInput)) {
-            $query->where(function ($search) use ($userInput) {
-                $search->whereRaw('LOWER(certificate_number) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(client_name) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(location) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(team_members) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(report_prepared_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('LOWER(report_approved_by) LIKE ?', ['%' . strtolower($userInput) . '%'])
-                    ->orWhereRaw('report_issue_date LIKE ?', ['%' . $userInput . '%'])
-                    ->orWhereRaw('report_validity_date LIKE ?', ['%' . $userInput . '%']);
-            });
-        }
-
-        $result = $query
-            ->orderBy('created_at', 'DESC')
-            ->orderBy('id', 'DESC')
-            ->paginate($perPage);
+        $result = $searchService->paginate($query, $userInput, $perPage);
 
         return response()->json(['data' => $result]);
     }
@@ -732,6 +708,24 @@ class CertificateController extends Controller
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
         ]);
+
+        $originalName = $request->file('file')->getClientOriginalName();
+
+        if (config('queue.default') !== 'sync') {
+            $storedPath = $request->file('file')->store('imports');
+
+            ProcessCertificateImportJob::dispatch(
+                $storedPath,
+                $originalName,
+                Auth::id(),
+                Auth::user()->name
+            );
+
+            return back()->with(
+                'success',
+                'Certificate import has been queued. Check the activity log when processing completes.'
+            );
+        }
 
         try {
             DB::transaction(function () use ($request) {
